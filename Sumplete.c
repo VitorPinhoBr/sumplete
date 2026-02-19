@@ -165,52 +165,43 @@ void criarNovoJogo(JogoSumplete *jogo)
 
 	srand(time(NULL));
 	
-	if(jogo->tamanho ==3){
-		int tam = 3;
-		for(int i=0;i<tam;i++){					//matriz jogo
-			for(int j=0;j<tam;j++)
-				jogo->matrizJogo[i][j] = (rand()%8)+1; 
+	int tam = jogo->tamanho;
+	for(int i=0;i<tam;i++){					//matriz jogo
+		for(int j=0;j<tam;j++)
+			jogo->matrizJogo[i][j] = (rand()%8)+1; 
+	}
+	jogo->quantidade_adicionar = 0;
+	for(int i=0;i<tam;i++){					//matriz solucao
+		for(int j=0;j<tam;j++){
+			jogo->matrizSolucao[i][j] = (rand()%2);
+			if(jogo->matrizSolucao[i][j] == 1)
+				jogo->quantidade_adicionar +=1; //qtd de respostas add
 		}
-		jogo->quantidade_adicionar = 0;
-		for(int i=0;i<tam;i++){					//matriz solucao
-			for(int j=0;j<tam;j++){
-				jogo->matrizSolucao[i][j] = (rand()%2);
-				if(jogo->matrizSolucao[i][j] == 1)
-					jogo->quantidade_adicionar +=1; //qtd de respostas add
+	}
+	jogo->somaLinha = malloc(tam * sizeof(int));
+	jogo->somaColuna = malloc(tam * sizeof(int));
+	
+	
+	for(int i=0;i<tam;i++){				//soma linha
+		sLinha = 0;
+		for(int j=0;j<tam;j++){
+			if(jogo->matrizSolucao[i][j] == 1){
+				sLinha += jogo->matrizJogo[i][j];
 			}
 		}
-		jogo->somaLinha = malloc(tam * sizeof(int));
-		jogo->somaColuna = malloc(tam * sizeof(int));
-		
-		
-		for(int i=0;i<tam;i++){				//soma linha
-			sLinha = 0;
-			for(int j=0;j<tam;j++){
-				if(jogo->matrizSolucao[i][j] == 1){
-					sLinha += jogo->matrizJogo[i][j];
-				}
-			}
-			jogo->somaLinha[i] = sLinha;
-		}
-		
-		
-		for(int i=0;i<tam;i++){			//soma coluna
-			sColuna = 0;
-			for(int j=0;j<tam;j++){
-				if(jogo->matrizSolucao[j][i] == 1){
-					sColuna += jogo->matrizJogo[j][i];
-				}
-			}
-			jogo->somaColuna[i] = sColuna;
-		}
-		
+		jogo->somaLinha[i] = sLinha;
 	}
 	
 	
-	else if(jogo->tamanho ==5)
-		printf("5x5");
-	else if(jogo->tamanho==7)
-		printf("7x7");
+	for(int i=0;i<tam;i++){			//soma coluna
+		sColuna = 0;
+		for(int j=0;j<tam;j++){
+			if(jogo->matrizSolucao[j][i] == 1){
+				sColuna += jogo->matrizJogo[j][i];
+			}
+		}
+		jogo->somaColuna[i] = sColuna;
+	}
 }
 void novo(JogoSumplete *jogo)
 {
@@ -258,12 +249,14 @@ int verifica_Vitoria(JogoSumplete *jogo,int tam)
 	return 1;
 }
 
-void resolver(JogoSumplete *jogo,int tam)
+void resolver(JogoSumplete *jogo)
 {
 	printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "\n"); //print primeira linha
 	printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
 
 	int k =0;
+	int tam;
+	tam = jogo->tamanho;
 
 	for(int i=0;i<tam;i++){	 						//print matriz + somaLinha
 		printf("%d",i+1);
@@ -291,13 +284,25 @@ void resolver(JogoSumplete *jogo,int tam)
 	}
 	printf(TAB_VER);
 	printf("\n");
+}
 
-	
+void dica(JogoSumplete *jogo)
+{
+	for(int i =0;i<jogo->tamanho;i++)
+		for(int j=0;j<jogo->tamanho;j++)
+			if(jogo->matrizSolucao[i][j] == 1 && jogo->matrizCor[i][j] !=1){
+				jogo->matrizCor[i][j] = 1;
+				return;
+			}
 }
 
 void carregar(JogoSumplete *jogo,char *fileName){
-	int tam=0;
-	strcat(fileName,".sum.txt");
+	int tam=0,quantidade_remover=0,quantidade_movimentos=0,tam_nome=0;
+	char condicional;
+	tam_nome = strlen(fileName);
+	if (tam_nome >= 4)
+		if(strcmp(&fileName[tam_nome - 5],".sum.txt")!=0)
+			strcat(fileName,".sum");
 	FILE *arquivo = fopen(fileName,"r");
 	if(arquivo == NULL)
 		printf("Não foi encontrado o arquivo");
@@ -319,17 +324,34 @@ void carregar(JogoSumplete *jogo,char *fileName){
 		for(int i=0;i<tam;i++)
 			fscanf(arquivo,"%d",&jogo->somaColuna[i]);			//lê soma coluna
 		
+		fscanf(arquivo,"%d",&quantidade_remover);				//lê número de remoções
 		
+		for(int i=0;i<tam;i++){
+			for(int j=0;j<tam;j++){
+				jogo->matrizSolucao[i][j] = 1;						//preenchendo a matriz com '1'
+			}	
+		}	
+		int lin,col;
+		for(int i=0;i<quantidade_remover;i++){						//removendo os necessários
+			fscanf(arquivo,"%d %d",&lin,&col);
+			jogo->matrizSolucao[lin-1][col-1] = 0;
+		}
 		
+		fscanf(arquivo,"%d",&quantidade_movimentos);	
+		
+		for(int i=0;i<quantidade_movimentos;i++){						
+			fscanf(arquivo," %c",&condicional);
+			if(condicional == 'a'){
+				fscanf(arquivo,"%d %d",&lin,&col);
+				jogo->matrizCor[lin-1][col-1] = 1;
+			}
+			else{
+				fscanf(arquivo,"%d %d",&lin,&col);
+				jogo->matrizCor[lin-1][col-1] = 2;
+			}
+		}
+		fscanf(arquivo,"%s",jogo->nome);	
 	}
-	
-	
-	
-	free(jogo->somaLinha);
-	free(jogo->somaColuna);
-	liberaMatriz(jogo->matrizJogo,tam);		
-	liberaMatriz(jogo->matrizSolucao,tam);
-	liberaMatriz(jogo->matrizCor,tam);
 	fclose(arquivo);
 }
 
@@ -337,7 +359,7 @@ void salvar(JogoSumplete *jogo, char *fileName){
 	int tam=0,quantidade_remover=0,quantidade_movimentos=0;
 	tam = jogo->tamanho;
 	quantidade_remover =(tam*tam) - jogo->quantidade_adicionar;
-	strcat(fileName,".sum.txt");
+	strcat(fileName,".sum");
 	
 	for(int i=0;i<tam;i++)
 		for(int j=0;j<tam;j++)
@@ -347,44 +369,44 @@ void salvar(JogoSumplete *jogo, char *fileName){
 	FILE *arquivo = fopen(fileName,"w"); // adicionar .sum
 	if(arquivo == NULL){
 		printf("Não foi encontrado o arquivo");
+		return;
 	}
-	else
-	{
-		fprintf(arquivo,"%d\n",tam);								//add tamanho matriz		
-		for(int i=0;i<tam;i++){
-			for(int j=0;j<tam;j++){
-				fprintf(arquivo,"%d ",jogo->matrizJogo[i][j]);		//add matriz no arquivo
-			}
-			fprintf(arquivo,"\n");
+
+	fprintf(arquivo,"%d\n",tam);								//add tamanho matriz		
+	for(int i=0;i<tam;i++){
+		for(int j=0;j<tam;j++){
+			fprintf(arquivo,"%d ",jogo->matrizJogo[i][j]);		//add matriz no arquivo
 		}
-		for(int i=0;i<tam;i++)
-			fprintf(arquivo,"%d ",jogo->somaLinha[i]);				//add soma linha
 		fprintf(arquivo,"\n");
-		
-		for(int i=0;i<tam;i++)
-			fprintf(arquivo,"%d ",jogo->somaColuna[i]);				//add soma coluna
-		fprintf(arquivo,"\n");
-		
-		fprintf(arquivo,"%d\n",quantidade_remover);					//numero de remoções 
-		
-		for(int i=0;i<tam;i++){
-			for(int j=0;j<tam;j++){									//add posições das remoções
-				if(jogo->matrizSolucao[i][j] == 0)
-					fprintf(arquivo,"%d %d\n",i+1,j+1);	
-			}
-		}
-		
-		fprintf(arquivo,"%d\n",quantidade_movimentos);	//add quantidade de movimentos
-		for(int i=0;i<tam;i++)
-			for(int j=0;j<tam;j++)
-				if(jogo->matrizCor[i][j] == 1)
-					fprintf(arquivo,"a %d %d\n",i+1,j+1);
-				else if(jogo->matrizCor[i][j] == 2)
-					fprintf(arquivo,"r %d %d\n",i+1,j+1);
-		
-		fprintf(arquivo,"%s\n",jogo->nome);							//add nome
-		fprintf(arquivo,"Tempo gasto: ?");							//add tempo
 	}
+	for(int i=0;i<tam;i++)
+		fprintf(arquivo,"%d ",jogo->somaLinha[i]);				//add soma linha
+	fprintf(arquivo,"\n");
+	
+	for(int i=0;i<tam;i++)
+		fprintf(arquivo,"%d ",jogo->somaColuna[i]);				//add soma coluna
+	fprintf(arquivo,"\n");
+	
+	fprintf(arquivo,"%d\n",quantidade_remover);					//numero de remoções 
+	
+	for(int i=0;i<tam;i++){
+		for(int j=0;j<tam;j++){									//add posições das remoções
+			if(jogo->matrizSolucao[i][j] == 0)
+				fprintf(arquivo,"%d %d\n",i+1,j+1);	
+		}
+	}
+	
+	fprintf(arquivo,"%d\n",quantidade_movimentos);				//add quantidade de movimentos
+	for(int i=0;i<tam;i++)
+		for(int j=0;j<tam;j++)
+			if(jogo->matrizCor[i][j] == 1)
+				fprintf(arquivo,"a %d %d\n",i+1,j+1);			// adicionar + posicao
+			else if(jogo->matrizCor[i][j] == 2)
+				fprintf(arquivo,"r %d %d\n",i+1,j+1);			//remover + posicao
+	
+	fprintf(arquivo,"%s\n",jogo->nome);							//add nome
+	fprintf(arquivo,"Tempo gasto: ?");							//add tempo
+
 	fclose(arquivo);
 }
  
@@ -487,6 +509,7 @@ int main(){
 			printf("\n\n");
 
 			int linha,coluna;
+			int vitoria = 0;
 			printf("%s, digite o comando: ",jogo.nome);
 			scanf("%s",comando);							//testa comando
 			if(strcmp(comando,"adicionar")==0){
@@ -501,6 +524,10 @@ int main(){
 				exit = 1;
 			else if(strcmp(comando,"ajuda")==0)
 				tabelaComandos();
+			else if(strcmp(comando,"resolver")==0)
+				vitoria = 1;
+			else if(strcmp(comando,"dica")==0)
+				dica(&jogo);
 			else if(strcmp(comando,"salvar")==0){
 				scanf("%s",fileName);
 				salvar(&jogo,fileName);
@@ -512,14 +539,14 @@ int main(){
 				printf("insira um comando válido\n");
 				limpar_buffer();
 			}
-			int vitoria = 0;
-			vitoria = verifica_Vitoria(&jogo,tam);
+			if(vitoria == 0)
+				vitoria = verifica_Vitoria(&jogo,tam);
 			
 			if(vitoria ==1){								// print vitoria
 				
 				printf("\n" GREEN("Parabéns! Você ganhou!\n"));
 				exit = 1;
-				resolver(&jogo,tam);
+				resolver(&jogo);
 			}
 			
 		} while (exit==0);
