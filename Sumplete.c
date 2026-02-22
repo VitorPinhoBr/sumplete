@@ -1,3 +1,4 @@
+//Vitor Pinho Galvao 25.2.4146
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -61,8 +62,8 @@
  
 typedef struct {
 	int tamanho;
-	int tempoJogo; 
-	char nome[27];
+	float tempoGasto; 
+	char nome[20];
 	int *somaLinha;
 	int *somaColuna;
 	int **matrizJogo;
@@ -134,31 +135,6 @@ void alocarJogo(JogoSumplete *jogo){
 	inicializaMatriz(jogo->matrizCor,jogo->tamanho);
 }
 
-
-void sair(int num_comando)
-{
-	char SN;
-	int teste = 0;
-	do{
-		int teste = 0;
-		if((num_comando == 3) || (num_comando == 4)){
-			printf("Você quer salvar o jogo antes de sair?(S/N): ");
-			scanf("%c",&SN);
-		}
-		if((SN=='S') || (SN=='s')){
-			printf("Jogo salvo!");
-			//salvar();
-		}
-		else if((SN=='N') || (SN=='n')){
-			printf("Jogo não salvo");
-		}
-		else{
-			printf("Insira uma resposta válida");
-			teste = 1;
-		}
-	}while(teste != 0);
-}
-
 void criarNovoJogo(JogoSumplete *jogo) 
 {
 	int sLinha = 0,sColuna = 0;
@@ -209,7 +185,7 @@ void novo(JogoSumplete *jogo)
 	
 	char dif;
 	printf("Digite o nome do jogador: ");
-	scanf("%s",jogo->nome); limpar_buffer();
+	scanf("%s",jogo->nome); limpar_buffer();				//fazer: fgets para nome
 	printf("Digite o nível de dificuldade:\n");
 	printf(BOLD("F: ")"nível fácil, tamanho 3x3\n");
 	printf(BOLD("M: ")"nível médio, tamanho 5x5\n");
@@ -235,8 +211,10 @@ void novo(JogoSumplete *jogo)
 	
 }
 
-int verifica_Vitoria(JogoSumplete *jogo,int tam)
+int verifica_Vitoria(JogoSumplete *jogo)
 {
+	int tam;
+	tam = jogo->tamanho;
 	for(int i=0;i<tam;i++)						//condicao de vitoria
 		for(int j=0;j<tam;j++){
 			if(jogo->matrizSolucao[i][j] == 0)		
@@ -251,13 +229,22 @@ int verifica_Vitoria(JogoSumplete *jogo,int tam)
 
 void resolver(JogoSumplete *jogo)
 {
-	printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "\n"); //print primeira linha
-	printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
-
-	int k =0;
+	if(jogo->tamanho ==3){
+		printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "\n"); //print primeira linha
+		printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
+	}
+	if(jogo->tamanho ==5){
+		printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "4 " TAB_VER "5 " TAB_VER "\n"); //print primeira linha
+		printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
+	}
+	if(jogo->tamanho ==7){
+		printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "4 " TAB_VER "5 " TAB_VER "6 " TAB_VER "7 " TAB_VER"\n"); //print primeira linha
+		printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR"\n");
+	}
+	
 	int tam;
 	tam = jogo->tamanho;
-
+	int k =0;
 	for(int i=0;i<tam;i++){	 						//print matriz + somaLinha
 		printf("%d",i+1);
 		for(int j=0;j<tam+1;j++){
@@ -273,17 +260,20 @@ void resolver(JogoSumplete *jogo)
 			}
 		}
 		printf("\n");
-		printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
+		printf(TAB_HOR);
+		for(int i=0;i<tam+1;i++)
+			printf(TAB_MJ TAB_HOR TAB_HOR);
+		printf("\n");
 	}
 	printf(" ");
 	for(int i=0;i<tam;i++){
 		if(jogo->somaColuna[i] <10)
-			printf(TAB_VER "%d ",jogo->somaColuna[i]);
+			printf(TAB_VER "%d ",jogo->somaColuna[i]);		//printf soma coluna
 		else
 			printf(TAB_VER "%d",jogo->somaColuna[i]);
 	}
 	printf(TAB_VER);
-	printf("\n");
+	printf("\n\n");
 }
 
 void dica(JogoSumplete *jogo)
@@ -337,20 +327,21 @@ void carregar(JogoSumplete *jogo,char *fileName){
 			jogo->matrizSolucao[lin-1][col-1] = 0;
 		}
 		
-		fscanf(arquivo,"%d",&quantidade_movimentos);	
+		fscanf(arquivo,"%d",&quantidade_movimentos);				//lê quantidade de movimentos feitos
 		
 		for(int i=0;i<quantidade_movimentos;i++){						
 			fscanf(arquivo," %c",&condicional);
 			if(condicional == 'a'){
 				fscanf(arquivo,"%d %d",&lin,&col);
-				jogo->matrizCor[lin-1][col-1] = 1;
+				jogo->matrizCor[lin-1][col-1] = 1;					//colore a matriz com verde
 			}
 			else{
-				fscanf(arquivo,"%d %d",&lin,&col);
+				fscanf(arquivo,"%d %d",&lin,&col);					//colore a matriz com vermelho
 				jogo->matrizCor[lin-1][col-1] = 2;
 			}
 		}
-		fscanf(arquivo,"%s",jogo->nome);	
+		fscanf(arquivo,"%s",jogo->nome);							//pega o nome
+		fscanf(arquivo,"%f",&jogo->tempoGasto);						//lê o tempo gasto
 	}
 	fclose(arquivo);
 }
@@ -405,156 +396,294 @@ void salvar(JogoSumplete *jogo, char *fileName){
 				fprintf(arquivo,"r %d %d\n",i+1,j+1);			//remover + posicao
 	
 	fprintf(arquivo,"%s\n",jogo->nome);							//add nome
-	fprintf(arquivo,"Tempo gasto: ?");							//add tempo
+	fprintf(arquivo,"%.1f",jogo->tempoGasto);									//add tempo
 
 	fclose(arquivo);
 }
+
+void printarJogo(JogoSumplete *jogo)
+{
+	int tam;
+	tam = jogo->tamanho;
+	int k =0;
+			for(int i=0;i<tam;i++){	 						//print matriz + somaLinha
+				printf("%d",i+1);
+				for(int j=0;j<tam+1;j++){
+					if(j<tam){
+						if(jogo->matrizCor[i][j] ==0)
+							printf(TAB_VER "%d ",jogo->matrizJogo[i][j]);
+						else if(jogo->matrizCor[i][j] == 1)
+							printf(TAB_VER GREEN("%d "),jogo->matrizJogo[i][j]);
+						else
+							printf(TAB_VER RED("%d "),jogo->matrizJogo[i][j]);
+					}
+					else{
+						printf(TAB_VER "%d",jogo->somaLinha[k]);
+						k++;
+					}
+				}
+				printf("\n");
+				printf(TAB_HOR);
+				for(int i=0;i<tam+1;i++)
+					printf(TAB_MJ TAB_HOR TAB_HOR);
+				printf("\n");
+			}
+			printf(" ");
+			for(int i=0;i<tam;i++){
+				if(jogo->somaColuna[i] <10)
+					printf(TAB_VER "%d ",jogo->somaColuna[i]);		//printf soma coluna
+				else
+					printf(TAB_VER "%d",jogo->somaColuna[i]);
+			}
+			printf(TAB_VER);
+			printf("\n\n");
+}
  
+ void sair(JogoSumplete *jogo)
+{
+	char SN,fileName[20];
+	int teste = 0;
+	do{
+		teste = 0;
+		printf("Você quer salvar o jogo antes de sair?(S/N): ");
+		scanf(" %c",&SN); limpar_buffer();
+		if((SN=='S') || (SN=='s')){
+			printf("Digite o nome do arquivo para salvar: ");
+			scanf("%s",fileName); limpar_buffer();
+			salvar(jogo,fileName);
+			printf("Jogo salvo!\n");
+		}
+		else if((SN=='N') || (SN=='n')){
+			printf("Jogo não salvo\n");
+		}
+		else{
+			printf("Insira uma resposta válida\n");
+			teste = 1;
+		}
+	}while(teste != 0);
+}
+
+int isGridInputValid(int linha, int coluna, int tamanhoGrid) {
+	int isValidLineInput = linha <= tamanhoGrid + 1 && linha >= 1;
+	int isValidColumnInput = coluna <= tamanhoGrid+ 1 && coluna >= 1;
+	
+	if(!isValidLineInput) {
+		printf("Erro: adicione uma linha válida \n"); // refinar condicao 
+		return 0;
+	}
+	
+	if(!isValidColumnInput){
+		printf("Erro: adicione uma coluna válida \n"); // refinar condicao 
+		return 0;
+	}
+	
+	return 1;
+}
+
+void salvarRanking(JogoSumplete *jogo)
+{
+	char nome[20];
+	float *temposRanking;
+	float menor;
+	temposRanking = malloc(10 * sizeof(float));
+	
+	FILE *arquivo = fopen("sumplete.rnk","r");
+	for(int i =0;i<10;i++)
+		fscanf(arquivo,"%s %d",nome,&temposRanking[i]);
+	
+	int temp = 0;
+	for (int i =0;i<9;i++) 
+        for (int j =0;j<9-i; j++) 
+            if (temposRanking[j] > temposRanking[j+1]) {	
+				temp = temposRanking[j];
+				temposRanking[j] = temposRanking[j+1];
+				temposRanking[j+1] = temp;
+			}
+			
+	int i =0;
+	 
+		
+			
+	for(int i =0;i<10;i++)
+		fprintf(arquivo,"%s"
+	
+	free(temposRanking);
+}
+
+void posicaoRanking()
+{
+	
+	
+	
+	
+	
+}
+void nome()
+{
+    char nome[20];
+    int tamanhoNome;
+    fgets(nome,sizeof(nome),stdin);
+    tamanhoNome = strlen(nome);
+    for(int i=0;i<tamanhoNome;i++)
+        if(nome[i] == ' '){
+            nome[i] = nome[i+1];
+            i+=1;
+        }       
+    
+    printf("%s",nome);
+
+    return 0;
+}
+
+
 int main(){
 	//tabela inicial
 	char comando[15];
 	char fileName[20];
 	int num_comando=0,exit=0;
+	struct timeval inicio, fim;
 	JogoSumplete jogo;
+	jogo.tempoGasto = 0;
 	tabelaComandos();
 	//comandos
-	printf("Digite um comando: ");
-	scanf("%15s",comando); limpar_buffer();
-	if(strcmp(comando,"ajuda")==0){
-		num_comando = 1;
-		tabelaComandos();
-	}
-	else if(strcmp(comando,"sair")==0){
-		num_comando = 2;
-		exit = 1;
-	}
-	else if(strcmp(comando,"novo")==0){
-		num_comando = 3;
-		novo(&jogo);
-	}
-	else if(strcmp(comando,"carregar")==0){
-		num_comando = 4;
-		printf("Insira o nome do jogo salvo: ");
-		scanf("%s",fileName);	limpar_buffer();			//fazer: tratar condicao
-		carregar(&jogo,fileName);
-	}
-	else if(strcmp(comando,"ranking")==0){
-		num_comando = 5;
-	}
-	else if(strcmp(comando,"salvar")==0){
-		printf("crie um novo jogo antes de salvar");
-		num_comando = 6;
-	}
-	else if(strcmp(comando,"dica")==0){
-		printf("crie um novo jogo antes de uma dica");
-		num_comando = 7;
-	}
-	else if(strcmp(comando,"resolver")==0){
-		printf("crie um novo jogo antes de resolver");
-		num_comando = 8;
-	}
-	else if(strcmp(comando,"adicionar")==0){
-		printf("crie um novo jogo antes de adicionar");
-		num_comando = 9;
-	}
-	else if(strcmp(comando,"remover")==0){
-		printf("crie um novo jogo antes de remover");
-		num_comando = 10;
-	}
-	else
-		printf("insira um comando válido!\n");
+	do{
+		printf("Digite um comando: ");
+		scanf("%15s",comando); limpar_buffer();
+		if(strcmp(comando,"ajuda")==0){
+			num_comando = 1;
+			tabelaComandos();
+		}
+		else if(strcmp(comando,"sair")==0){
+			num_comando = 2;
+			exit = 1;
+		}
+		else if(strcmp(comando,"novo")==0){
+			num_comando = 3;
+			novo(&jogo);
+		}
+		else if(strcmp(comando,"carregar")==0){
+			num_comando = 4;
+			printf("Insira o nome do jogo salvo: ");
+			scanf("%s",fileName);	limpar_buffer();			//fazer: tratar condicao
+			carregar(&jogo,fileName);
+		}
+		else if(strcmp(comando,"ranking")==0){
+			num_comando = 5;
+		}
+		else if(strcmp(comando,"salvar")==0){
+			printf("crie um novo jogo antes de salvar\n");
+			num_comando = 6;
+		}
+		else if(strcmp(comando,"dica")==0){
+			printf("crie um novo jogo antes de uma dica\n");
+			num_comando = 7;
+		}
+		else if(strcmp(comando,"resolver")==0){
+			printf("crie um novo jogo antes de resolver\n");
+			num_comando = 8;
+		}
+		else if(strcmp(comando,"adicionar")==0){
+			printf("crie um novo jogo antes de adicionar\n");
+			num_comando = 9;
+		}
+		else if(strcmp(comando,"remover")==0){
+			printf("crie um novo jogo antes de remover\n");
+			num_comando = 10;
+		}
+		else
+			printf("insira um comando válido!\n");
+	}while(num_comando == 1 || num_comando == 6 || num_comando == 7 || num_comando == 8 || num_comando == 9 || num_comando == 10);
 	
-	
+	gettimeofday(&inicio, 0);
 	if(exit!=0) {
 		return 1;
 	}
 	
-
-	if(jogo.tamanho ==3){
-		int tam = 3;
-		do
-		{
+	
+	do
+	{
+		if(jogo.tamanho ==3){
 			printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "\n"); //print primeira linha
 			printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
+		}
+		if(jogo.tamanho ==5){
+			printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "4 " TAB_VER "5 " TAB_VER "\n"); //print primeira linha
+			printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
+		}
+		if(jogo.tamanho ==7){
+			printf(" "TAB_VER "1 " TAB_VER "2 " TAB_VER "3 " TAB_VER "4 " TAB_VER "5 " TAB_VER "6 " TAB_VER "7 " TAB_VER"\n"); //print primeira linha
+			printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR"\n");
+		}
+		printarJogo(&jogo);
+		
+		int linha,coluna;
+		int vitoria = 0;
+		printf("%s, digite o comando: ",jogo.nome);
+		scanf("%s",comando);							//testa comando
+		if(strcmp(comando,"adicionar")==0){
+			scanf("%d %d",&linha,&coluna);
 			
-			int k =0;
+			if(!isGridInputValid(linha, coluna, jogo.tamanho))  // utilizar tbm no remover
+				continue;
 			
-			for(int i=0;i<tam;i++){	 						//print matriz + somaLinha
-				printf("%d",i+1);
-				for(int j=0;j<tam+1;j++){
-					if(j<tam){
-						if(jogo.matrizCor[i][j] ==0)
-							printf(TAB_VER "%d ",jogo.matrizJogo[i][j]);
-						else if(jogo.matrizCor[i][j] == 1)
-							printf(TAB_VER GREEN("%d "),jogo.matrizJogo[i][j]);
-						else
-							printf(TAB_VER RED("%d "),jogo.matrizJogo[i][j]);
-					}
-					else{
-						printf(TAB_VER "%d",jogo.somaLinha[k]);
-						k++;
-					}
-				}
-				printf("\n");
-				printf(TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR TAB_MJ TAB_HOR TAB_HOR "\n");
-			}
-			printf(" ");
-			for(int i=0;i<tam;i++){
-				if(jogo.somaColuna[i] <10)
-					printf(TAB_VER "%d ",jogo.somaColuna[i]);		//printf soma coluna
-				else
-					printf(TAB_VER "%d",jogo.somaColuna[i]);
-			}
-			printf(TAB_VER);
-			printf("\n\n");
-
-			int linha,coluna;
-			int vitoria = 0;
-			printf("%s, digite o comando: ",jogo.nome);
-			scanf("%s",comando);							//testa comando
-			if(strcmp(comando,"adicionar")==0){
-				scanf("%d %d",&linha,&coluna);
-				jogo.matrizCor[linha-1][coluna-1] = 1;		//printf verde
-			}
-			else if(strcmp(comando,"remover")==0){
-				scanf("%d %d",&linha,&coluna);
-				jogo.matrizCor[linha-1][coluna-1] = 2;		//printf vermelho
-			}
-			else if(strcmp(comando,"sair")==0)
-				exit = 1;
-			else if(strcmp(comando,"ajuda")==0)
-				tabelaComandos();
-			else if(strcmp(comando,"resolver")==0)
-				vitoria = 1;
-			else if(strcmp(comando,"dica")==0)
-				dica(&jogo);
-			else if(strcmp(comando,"salvar")==0){
-				scanf("%s",fileName);
-				salvar(&jogo,fileName);
-			}
-			
-			
-			
-			else{
-				printf("insira um comando válido\n");
-				limpar_buffer();
-			}
-			if(vitoria == 0)
-				vitoria = verifica_Vitoria(&jogo,tam);
-			
-			if(vitoria ==1){								// print vitoria
-				
-				printf("\n" GREEN("Parabéns! Você ganhou!\n"));
-				exit = 1;
-				resolver(&jogo);
-			}
-			
-		} while (exit==0);
+			// A partir de aqui sabemos que o input linha e coluna eh valido
+			jogo.matrizCor[linha-1][coluna-1] = 1;		//printf verde
+		}
+		else if(strcmp(comando,"remover")==0){
+			scanf("%d %d",&linha,&coluna);
+			jogo.matrizCor[linha-1][coluna-1] = 2;		//printf vermelho
+		}
+		else if(strcmp(comando,"sair")==0){
+			exit = 1;
+			gettimeofday(&fim, 0);
+			long sec = fim.tv_sec - inicio.tv_sec;
+			long microsec = fim.tv_usec - inicio.tv_usec;
+			double passado = sec + microsec*1e-6;
+			jogo.tempoGasto = passado;
+			sair(&jogo);
+		}
+		else if(strcmp(comando,"ajuda")==0)
+			tabelaComandos();
+		else if(strcmp(comando,"resolver")==0)
+			vitoria = 1;
+		else if(strcmp(comando,"dica")==0)
+			dica(&jogo);
+		else if(strcmp(comando,"salvar")==0){
+			scanf("%s",fileName);
+			gettimeofday(&fim, 0);
+			long sec = fim.tv_sec - inicio.tv_sec;
+			long microsec = fim.tv_usec - inicio.tv_usec;
+			double passado = sec + microsec*1e-6;
+			jogo.tempoGasto = passado;
+			salvar(&jogo,fileName);
+		}else{
+			printf("insira um comando válido\n");
+			limpar_buffer();
+		}
+		
+		if(vitoria == 0)
+			vitoria = verifica_Vitoria(&jogo);
+		
+		if(vitoria ==1){								// print vitoria
+			gettimeofday(&fim, 0);
+			long sec = fim.tv_sec - inicio.tv_sec;
+			long microsec = fim.tv_usec - inicio.tv_usec;
+			double passado = sec + microsec*1e-6;
+			passado += jogo.tempoGasto;
+			printf("\n" GREEN("Parabéns! Você ganhou!\n"));
+			exit = 1;
+			resolver(&jogo);
+			printf("Tempo de jogo: %.3f segundos.\n", passado);
+			salvarRanking(&jogo);
+			posicaoRanking();
+		}
+		
+	} while (exit==0);
 	
 	free(jogo.somaLinha);
 	free(jogo.somaColuna);
-	liberaMatriz(jogo.matrizJogo,tam);		
-	liberaMatriz(jogo.matrizSolucao,tam);
-	liberaMatriz(jogo.matrizCor,tam);
-	}
- }
+	liberaMatriz(jogo.matrizJogo,jogo.tamanho);		
+	liberaMatriz(jogo.matrizSolucao,jogo.tamanho);
+	liberaMatriz(jogo.matrizCor,jogo.tamanho);
+	return 0;
+}
