@@ -185,7 +185,7 @@ void novo(JogoSumplete *jogo)
 	int teste =0;
 	
 	printf("Digite o nome do jogador: ");
-	scanf("%s",jogo->nome); limpar_buffer();
+	scanf("%27s",jogo->nome); limpar_buffer();
 	do{
 		char dif;			
 		printf("Digite o nível de dificuldade:\n");
@@ -299,11 +299,13 @@ void carregar(JogoSumplete *jogo,char *fileName){
 	char condicional;
 	tam_nome = strlen(fileName);
 	if (tam_nome >= 4)
-		if(strcmp(&fileName[tam_nome - 5],".sum.txt")!=0)
+		if(strcmp(&fileName[tam_nome - 5],".sum")!=0)
 			strcat(fileName,".sum");
 	FILE *arquivo = fopen(fileName,"r");
-	if(arquivo == NULL)
+	if(arquivo == NULL){
 		printf("Não foi encontrado o arquivo");
+		return;
+	}
 	else{
 		fscanf(arquivo,"%d",&jogo->tamanho);
 		tam = jogo->tamanho;
@@ -365,7 +367,7 @@ void salvar(JogoSumplete *jogo, char *fileName){
 			if(jogo->matrizCor[i][j] == 1 || jogo->matrizCor[i][j] == 2)
 				quantidade_movimentos +=1; 
 	
-	FILE *arquivo = fopen(fileName,"w"); // adicionar .sum
+	FILE *arquivo = fopen(fileName,"w");
 	if(arquivo == NULL){
 		printf("Não foi encontrado o arquivo");
 		return;
@@ -449,7 +451,7 @@ void printarJogo(JogoSumplete *jogo)
  
  void sair(JogoSumplete *jogo)
 {
-	char SN,fileName[20];
+	char SN,fileName[28];
 	int teste = 0;
 	do{
 		teste = 0;
@@ -602,7 +604,7 @@ int main(){
 			num_comando = 4;
 			printf("Insira o nome do jogo salvo: ");
 			scanf("%27s",fileName);					
-			if (validarNome(fileName)){
+			if (validarNome(fileName)== 1){
 				carregar(&jogo,fileName);
 				num_comando =0;
 			}
@@ -671,14 +673,14 @@ int main(){
 		scanf("%s",comando);
 		
 		if(strcmp(comando,"adicionar")==0){
-			scanf("%d %d",&linha,&coluna);
+			scanf("%d %d",&linha,&coluna); limpar_buffer();
 			if(ValidarMatriz(linha, coluna, jogo.tamanho)){
 				jogo.matrizCor[linha-1][coluna-1] = 1;		//printf verde
 			}
 			
 		}
 		else if(strcmp(comando,"remover")==0){
-			scanf("%d %d",&linha,&coluna);
+			scanf("%d %d",&linha,&coluna); limpar_buffer();
 			if(ValidarMatriz(linha, coluna, jogo.tamanho)){
 				jogo.matrizCor[linha-1][coluna-1] = 2;				//printf vermelho
 			}
@@ -689,8 +691,7 @@ int main(){
 			gettimeofday(&fim, 0);
 			long sec = fim.tv_sec - inicio.tv_sec;
 			long microsec = fim.tv_usec - inicio.tv_usec;
-			double passado = sec + microsec*1e-6;
-			jogo.tempoGasto = passado;
+			jogo.tempoGasto += (sec + microsec*1e-6);
 			sair(&jogo);
 		}
 		else if(strcmp(comando,"ajuda")==0)
@@ -701,14 +702,36 @@ int main(){
 		}
 		else if(strcmp(comando,"dica")==0)
 			dica(&jogo);
+		else if(strcmp(comando,"novo")==0)
+			printf("Termine o jogo para iniciar um novo!\n");
+		else if(strcmp(comando,"carregar")==0)
+			printf("Termine o jogo para carregar outro jogo\n");
 		else if(strcmp(comando,"salvar")==0){
-			scanf("%s",fileName);
+			int teste=0;
+			do
+			{
+				scanf("%27s",fileName);					
+				if (validarNome(fileName) == 1){
+					gettimeofday(&fim, 0);
+					long sec = fim.tv_sec - inicio.tv_sec;
+					long microsec = fim.tv_usec - inicio.tv_usec;
+					double passado = sec + microsec*1e-6;
+					jogo.tempoGasto = passado;
+					salvar(&jogo,fileName);
+					teste = 1;
+				}
+				else{
+					printf("Insira um nome de arquivo válido: ");
+				}
+				
+			}while(teste !=1);
 			gettimeofday(&fim, 0);
 			long sec = fim.tv_sec - inicio.tv_sec;
 			long microsec = fim.tv_usec - inicio.tv_usec;
 			double passado = sec + microsec*1e-6;
-			jogo.tempoGasto = passado;
+			jogo.tempoGasto += passado;
 			salvar(&jogo,fileName);
+			gettimeofday(&inicio,0);
 		}else{
 			printf("insira um comando válido\n");
 			limpar_buffer();
@@ -722,7 +745,7 @@ int main(){
 			long sec = fim.tv_sec - inicio.tv_sec;
 			long microsec = fim.tv_usec - inicio.tv_usec;
 			
-			jogo.tempoGasto = (sec + microsec*1e-6);
+			jogo.tempoGasto += (sec + microsec*1e-6);
 			
 			printf("\n" GREEN("Parabéns! Você ganhou!\n"));
 			exit = 1;
