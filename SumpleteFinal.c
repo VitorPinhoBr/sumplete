@@ -299,8 +299,8 @@ void carregar(JogoSumplete *jogo,char *fileName){
 	char condicional;
 	tam_nome = strlen(fileName);
 	if (tam_nome >= 4)
-		if(strcmp(&fileName[tam_nome - 5],".sum")!=0)
-			strcat(fileName,".sum");
+		if(strcmp(&fileName[tam_nome - 4],".sum")!=0)				//verificar se ja tem .sum
+			strcat(fileName,".sum");								//add .sum caso nao tenha
 	FILE *arquivo = fopen(fileName,"r");
 	if(arquivo == NULL){
 		printf("Não foi encontrado o arquivo");
@@ -511,7 +511,7 @@ void salvarRanking(JogoSumplete *jogo)
 	
 	FILE *arquivo = fopen("sumplete.rnk","r");
 	if(arquivo != NULL){
-		while (totalRegistros < 10 && fscanf(arquivo,"%s %f", nomes[totalRegistros], &temposRanking[totalRegistros]) == 2)
+		while (totalRegistros < 10 && fscanf(arquivo,"%s %f", nomes[totalRegistros], &temposRanking[totalRegistros]) == 2)	//ler quantidade de pessoas no ranking
 		{
 			totalRegistros++;
 		}
@@ -529,12 +529,12 @@ void salvarRanking(JogoSumplete *jogo)
                 float tempT;
 				tempT = temposRanking[j];
                 temposRanking[j] = temposRanking[j + 1];
-                temposRanking[j + 1] = tempT;
+                temposRanking[j + 1] = tempT;				//ordem crescente
                 // Troca nome
                 char tempN[28];
                 strcpy(tempN, nomes[j]);
                 strcpy(nomes[j], nomes[j + 1]);
-                strcpy(nomes[j + 1], tempN);
+                strcpy(nomes[j + 1], tempN);				//muda igual o tempo
             }
         }
     }
@@ -578,7 +578,15 @@ int main(){
 	int num_comando=0,exit=0;
 	struct timeval inicio, fim;
 	JogoSumplete jogo;
+	
+	jogo.matrizJogo = NULL;						//inicializar jogo
+    jogo.matrizSolucao = NULL;
+    jogo.matrizCor = NULL;
+    jogo.somaLinha = NULL;
+    jogo.somaColuna = NULL;
+    jogo.tamanho = 0;
 	jogo.tempoGasto = 0;
+	
 	tabelaComandos();
 	//comandos
 	do{
@@ -725,13 +733,6 @@ int main(){
 				}
 				
 			}while(teste !=1);
-			gettimeofday(&fim, 0);
-			long sec = fim.tv_sec - inicio.tv_sec;
-			long microsec = fim.tv_usec - inicio.tv_usec;
-			double passado = sec + microsec*1e-6;
-			jogo.tempoGasto += passado;
-			salvar(&jogo,fileName);
-			gettimeofday(&inicio,0);
 		}else{
 			printf("insira um comando válido\n");
 			limpar_buffer();
@@ -750,7 +751,7 @@ int main(){
 			printf("\n" GREEN("Parabéns! Você ganhou!\n"));
 			exit = 1;
 			resolver(&jogo);
-			if(condicaoRanking !=1){
+			if(condicaoRanking !=1){					//verificar se resolveu sem o comando resolver
 				printf("Tempo de jogo: %.3f segundos.\n", jogo.tempoGasto);
 				salvarRanking(&jogo);
 				posicaoRanking();
